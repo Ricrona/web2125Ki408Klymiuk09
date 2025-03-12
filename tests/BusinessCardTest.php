@@ -5,7 +5,9 @@ class BusinessCardTest extends TestCase
 {
     public function testGetPageLoads()
     {
-        $output = file_get_contents('http://localhost/web2125Ki408Klymiuk09/get_page.php');
+        $baseUrl = getenv('BASE_URL') ?: 'http://localhost/web2125Ki408Klymiuk09';
+        $output = file_get_contents($baseUrl . '/get_page.php');
+
         $this->assertStringContainsString('GET Request Page', $output);
     }
 
@@ -19,13 +21,17 @@ class BusinessCardTest extends TestCase
             ],
         ];
         $context  = stream_context_create($options);
-        $output = file_get_contents('http://localhost/web2125Ki408Klymiuk09/post_page.php', false, $context);
+        $baseUrl = getenv('BASE_URL') ?: 'http://localhost/web2125Ki408Klymiuk09';
+        $output = file_get_contents($baseUrl . '/post_page.php', false, $context);
+
         $this->assertStringContainsString('POST Request Page', $output);
     }
 
     public function testAjaxGet()
     {
-        $response = file_get_contents('http://localhost/web2125Ki408Klymiuk09/process_get.php?data=test');
+        $baseUrl = getenv('BASE_URL') ?: 'http://localhost/web2125Ki408Klymiuk09';
+        $response = file_get_contents($baseUrl . '/process_get.php?data=test');
+
         $this->assertStringContainsString('GET AJAX Response: test', $response);
     }
 
@@ -39,7 +45,9 @@ class BusinessCardTest extends TestCase
             ],
         ];
         $context  = stream_context_create($options);
-        $response = file_get_contents('http://localhost/web2125Ki408Klymiuk09/process_post.php', false, $context);
+        $baseUrl = getenv('BASE_URL') ?: 'http://localhost/web2125Ki408Klymiuk09';
+        $response = file_get_contents($baseUrl . '/process_post.php', false, $context);
+
         $this->assertStringContainsString('POST AJAX Response: test', $response);
     }
 }

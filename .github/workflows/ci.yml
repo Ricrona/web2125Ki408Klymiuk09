@@ -27,6 +27,14 @@ jobs:
       - name: Install Dependencies
         run: composer install
 
+      - name: Set Environment Variable for Tests
+        run: echo "BASE_URL=http://localhost:8000/web2125Ki408Klymiuk09" >> $GITHUB_ENV
+
+      - name: Start PHP Built-In Server
+        run: |
+          php -S localhost:8000 -t . > /dev/null 2>&1 &
+          sleep 5
+
       - name: Run Unit Tests
         run: vendor/bin/phpunit --configuration phpunit.xml
 
