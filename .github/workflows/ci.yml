@@ -28,7 +28,7 @@ jobs:
         run: composer install
 
       - name: Set Environment Variable for Tests
-        run: echo "BASE_URL=http://localhost:8000/web2125Ki408Klymiuk09" >> $GITHUB_ENV
+        run: echo "BASE_URL=http://localhost:8000" >> $GITHUB_ENV
 
       - name: Start PHP Built-In Server
         run: |
