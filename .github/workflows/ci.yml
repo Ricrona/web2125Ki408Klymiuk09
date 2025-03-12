@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: 
+      - develop
+      - feature/develop/task2
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          extensions: mbstring, xml, curl
+          ini-values: post_max_size=256M, upload_max_filesize=256M
+
+      - name: Install Dependencies
+        run: composer install
+
+      - name: Run Unit Tests
+        run: vendor/bin/phpunit --configuration phpunit.xml
+
+      - name: Zip Site
+        run: zip -r web2125Ki408Klymiuk09.zip .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: web2125Ki408Klymiuk09
+          path: web2125Ki408Klymiuk09.zip
