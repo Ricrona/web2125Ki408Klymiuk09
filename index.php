@@ -11,6 +11,15 @@
   <p>Task repo: <a href="https://github.com/Ricrona/web2125Ki408Klymiuk09/tree/main" target="__blank">click here!</a></p>
   <p>Contact: alyona.klymiyk.ki.2021@lpnu.ua</p>
 
+  <p><a href="get_page.php">Load GET Page</a></p>
+
+  <form action="post_page.php" method="POST">
+    <input type="hidden" name="info" value="Some POST data">
+    <button type="submit">Load POST Page</button>
+  </form>
+
+  <hr>
+
   <?php
   if (isset($_GET['non_ajax_get'])) {
       echo "<p>Non-AJAX GET value: " . htmlspecialchars($_GET['non_ajax_get']) . "</p>";
