@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="vendor/autoload.php" colors="true">
+    <php>
+        <env name="BASE_URL" value="http://localhost/web2125Ki408Klymiuk09"/>
+    </php>
+    <testsuites>
+        <testsuite name="BusinessCard Test Suite">
+            <directory>./tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
