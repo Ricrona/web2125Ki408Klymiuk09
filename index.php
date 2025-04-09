@@ -19,7 +19,8 @@ session_start();
     <!-- Auth section -->
     <?php if (isset($_SESSION['username'])): ?>
       <div class="auth-message">
-        <p>Logged in as <?php echo htmlspecialchars($_SESSION['username']); ?>. <a href="logout.php">Logout</a></p>
+        <p>Logged in as "<?php echo htmlspecialchars($_SESSION['username']); ?>". <a href="logout.php">Logout</a>.</p>
+        <p>Also you can <a href="login.php">Login</a> by use another method</p>
       </div>
     <?php else: ?>
       <div class="auth-message">
