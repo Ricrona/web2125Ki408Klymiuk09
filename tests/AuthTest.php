@@ -4,17 +4,31 @@ use PHPUnit\Framework\TestCase;
 class AuthTest extends TestCase
 {
     protected $baseUrl;
+    protected $mysqli;
 
     protected function setUp(): void
     {
-        // Use the correct BASE_URL for testing (make sure your GitHub Action or local setup sets this)
         $this->baseUrl = getenv('BASE_URL') ?: 'http://localhost:8000';
-        // Optionally, you may add code here to clean out test records from the database.
+
+        $db_host = getenv('DB_HOST') ?: 'localhost';
+        $db_user = getenv('DB_USER') ?: 'root';
+        $db_pass = getenv('DB_PASS') ?: 'root';
+        $db_name = getenv('DB_NAME') ?: 'test_db';
+
+        $this->mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
+        if ($this->mysqli->connect_errno) {
+            die("Database connection error: " . $this->mysqli->connect_error);
+        }
+
+        $this->mysqli->query("DELETE FROM users WHERE username LIKE 'testuser_%'");
     }
 
-    /**
-     * Helper function to register a user using registration.php.
-     */
+    protected function tearDown(): void
+    {
+        $this->mysqli->query("DELETE FROM users WHERE username LIKE 'testuser_%'");
+        $this->mysqli->close();
+    }
+
     protected function registerUser($username, $password)
     {
         $options = [
@@ -33,15 +47,16 @@ class AuthTest extends TestCase
 
     public function testLoginEmptyFields()
     {
+        $postData = [
+            'username' => '',
+            'password' => '',
+            'method'   => 'plain'
+        ];
         $options = [
             'http' => [
                 'method'  => 'POST',
                 'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-                'content' => http_build_query([
-                    'username' => '',
-                    'password' => '',
-                    'method'   => 'plain'
-                ]),
+                'content' => http_build_query($postData),
             ],
         ];
         $context = stream_context_create($options);
@@ -52,15 +67,16 @@ class AuthTest extends TestCase
 
     public function testLoginNonExistentUser()
     {
+        $postData = [
+            'username' => 'nonexistentuser',
+            'password' => 'any',
+            'method'   => 'plain'
+        ];
         $options = [
             'http' => [
                 'method'  => 'POST',
                 'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-                'content' => http_build_query([
-                    'username' => 'nonexistentuser',
-                    'password' => 'any',
-                    'method'   => 'plain'
-                ]),
+                'content' => http_build_query($postData),
             ],
         ];
         $context = stream_context_create($options);
@@ -71,20 +87,20 @@ class AuthTest extends TestCase
 
     public function testLoginIncorrectPassword()
     {
-        // Register a unique test user.
+        // Register a new user with a unique username.
         $uniqueUsername = 'testuser_' . uniqid();
         $this->registerUser($uniqueUsername, 'correctpassword');
 
-        // Attempt to login with an incorrect password using the "plain" method.
+        $postData = [
+            'username' => $uniqueUsername,
+            'password' => 'wrongpassword',
+            'method'   => 'plain'
+        ];
         $options = [
             'http' => [
-                'method'  => 'POST',
-                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-                'content' => http_build_query([
-                    'username' => $uniqueUsername,
-                    'password' => 'wrongpassword',
-                    'method'   => 'plain'
-                ]),
+                'method' => 'POST',
+                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                'content' => http_build_query($postData),
             ],
         ];
         $context = stream_context_create($options);
@@ -95,20 +111,20 @@ class AuthTest extends TestCase
 
     public function testLoginSuccessful()
     {
-        // Register a unique test user.
+        // Register a new user and then attempt a correct login.
         $uniqueUsername = 'testuser2_' . uniqid();
         $this->registerUser($uniqueUsername, 'mypassword');
 
-        // Attempt to login with the correct credentials using the "plain" method.
+        $postData = [
+            'username' => $uniqueUsername,
+            'password' => 'mypassword',
+            'method'   => 'plain'
+        ];
         $options = [
             'http' => [
-                'method'  => 'POST',
-                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-                'content' => http_build_query([
-                    'username' => $uniqueUsername,
-                    'password' => 'mypassword',
-                    'method'   => 'plain'
-                ]),
+                'method' => 'POST',
+                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                'content' => http_build_query($postData),
             ],
         ];
         $context = stream_context_create($options);
