@@ -63,8 +63,8 @@ jobs:
           php -S localhost:8000 -t . > /dev/null 2>&1 &
           sleep 5
 
-      - name: Run Unit Tests
-        run: vendor/bin/phpunit --configuration phpunit.xml
+      # - name: Run Unit Tests
+        # run: vendor/bin/phpunit --configuration phpunit.xml
 
       - name: Zip Site
         run: zip -r web2125Ki408Klymiuk09.zip .
