@@ -12,8 +12,8 @@ if ($mysqli->connect_errno) {
 }
 
 $encryption_method = "AES-256-CBC";
-$secret_key = "my_secret_key";
-$secret_iv  = "my_secret_iv";
+$secret_key = "my_secret_key";   
+$secret_iv  = "my_secret_iv";    
 $key = hash('sha256', $secret_key);
 $iv  = substr(hash('sha256', $secret_iv), 0, 16);
 
@@ -21,19 +21,16 @@ $message = "";
 $messageType = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Getting the selected method (plain, hash, or encrypted)
     $method = $_POST['method'] ?? "";
     $username = trim($_POST['username'] ?? "");
     $password = trim($_POST['password'] ?? "");
 
     $client_pass = $password;
-    $server_received_pass = $password;
-
     if (empty($username) || empty($password)) {
          $message = "Please fill in all fields.";
          $messageType = "danger";
     } else {
-         // Check if a user exists with this username
+         // Check if user exists
          $stmt = $mysqli->prepare("SELECT id FROM users WHERE username = ?");
          $stmt->bind_param("s", $username);
          $stmt->execute();
@@ -45,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              $messageType = "danger";
          } else {
              $user_id = $user['id'];
-             // Getting the password value from the user_passwords table for the specified method
              $stmt = $mysqli->prepare("SELECT password_value FROM user_passwords WHERE user_id = ? AND password_type = ?");
              $stmt->bind_param("is", $user_id, $method);
              $stmt->execute();
@@ -63,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                          $_SESSION['username'] = $username;
                          $message = "Authentication successful (plain password).<br>"
                            . "Password sent by client: " . htmlspecialchars($client_pass) . "<br>"
-                           . "Password received by server: " . htmlspecialchars($server_received_pass) . "<br>"
+                           . "Password received by server: " . htmlspecialchars($stored_pass) . "<br>"
                            . "Password stored in database: " . htmlspecialchars($stored_pass);
                          $messageType = "success";
                      } else {
@@ -75,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                          $_SESSION['username'] = $username;
                          $message = "Authentication successful (hashed password).<br>"
                            . "Password sent by client: " . htmlspecialchars($client_pass) . "<br>"
-                           . "Password received by server: " . htmlspecialchars($server_received_pass) . "<br>"
+                           . "Password received by server: " . htmlspecialchars($stored_pass) . "<br>"
                            . "Password stored in database (hash): " . htmlspecialchars($stored_pass);
                          $messageType = "success";
                      } else {
@@ -88,8 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                          $_SESSION['username'] = $username;
                          $message = "Authentication successful (encrypted password).<br>"
                            . "Password sent by client: " . htmlspecialchars($client_pass) . "<br>"
-                           . "Password received by server: " . htmlspecialchars($server_received_pass) . "<br>"
-                           . "Password stored in database (encrypted): " . htmlspecialchars($stored_pass);
+                           . "Password received by server: " . htmlspecialchars($stored_pass) . "<br>"
+                           . "Password stored in database (encrypted): " . htmlspecialchars($client_pass);
                          $messageType = "success";
                      } else {
                          $message = "Incorrect password (encrypted password).";
