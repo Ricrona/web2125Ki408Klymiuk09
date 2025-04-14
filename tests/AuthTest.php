@@ -7,7 +7,9 @@ class AuthTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->baseUrl = getenv('BASE_URL') ?: 'http://localhost/web2125Ki408Klymiuk09';
+        // Use the correct BASE_URL for testing (make sure your GitHub Action or local setup sets this)
+        $this->baseUrl = getenv('BASE_URL') ?: 'http://localhost:8000';
+        // Optionally, you may add code here to clean out test records from the database.
     }
 
     /**
@@ -31,7 +33,6 @@ class AuthTest extends TestCase
 
     public function testLoginEmptyFields()
     {
-        // Test when both username and password fields are empty.
         $options = [
             'http' => [
                 'method'  => 'POST',
@@ -39,7 +40,7 @@ class AuthTest extends TestCase
                 'content' => http_build_query([
                     'username' => '',
                     'password' => '',
-                    'method' => 'plain'
+                    'method'   => 'plain'
                 ]),
             ],
         ];
@@ -51,7 +52,6 @@ class AuthTest extends TestCase
 
     public function testLoginNonExistentUser()
     {
-        // Test login with a non-existent username.
         $options = [
             'http' => [
                 'method'  => 'POST',
@@ -71,15 +71,15 @@ class AuthTest extends TestCase
 
     public function testLoginIncorrectPassword()
     {
-        // Register a test user with a unique username.
+        // Register a unique test user.
         $uniqueUsername = 'testuser_' . uniqid();
         $this->registerUser($uniqueUsername, 'correctpassword');
 
-        // Attempt to login with the wrong password using plain method.
+        // Attempt to login with an incorrect password using the "plain" method.
         $options = [
             'http' => [
-                'method' => 'POST',
-                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                'method'  => 'POST',
+                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
                 'content' => http_build_query([
                     'username' => $uniqueUsername,
                     'password' => 'wrongpassword',
@@ -95,15 +95,15 @@ class AuthTest extends TestCase
 
     public function testLoginSuccessful()
     {
-        // Register a new unique user.
+        // Register a unique test user.
         $uniqueUsername = 'testuser2_' . uniqid();
         $this->registerUser($uniqueUsername, 'mypassword');
 
-        // Attempt to login with correct credentials using plain method.
+        // Attempt to login with the correct credentials using the "plain" method.
         $options = [
             'http' => [
-                'method' => 'POST',
-                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                'method'  => 'POST',
+                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
                 'content' => http_build_query([
                     'username' => $uniqueUsername,
                     'password' => 'mypassword',
