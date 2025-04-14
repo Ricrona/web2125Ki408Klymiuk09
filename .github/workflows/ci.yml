@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: 
+    branches:
       - develop
       - feature/develop/task2
   pull_request:
@@ -12,6 +12,22 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: test_db
+      BASE_URL: http://localhost:8000
 
     steps:
       - name: Checkout Code
@@ -26,6 +42,18 @@ jobs:
 
       - name: Install Dependencies
         run: composer install
+
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..10}; do
+            if mysqladmin ping -h "127.0.0.1" --silent; then
+              echo "MySQL is up";
+              exit 0;
+            fi
+            echo "Waiting for MySQL...";
+            sleep 5;
+          done
+          exit 1
 
       - name: Set Environment Variable for Tests
         run: echo "BASE_URL=http://localhost:8000" >> $GITHUB_ENV

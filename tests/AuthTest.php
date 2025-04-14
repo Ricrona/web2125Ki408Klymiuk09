@@ -4,24 +4,25 @@ use PHPUnit\Framework\TestCase;
 class AuthTest extends TestCase
 {
     protected $baseUrl;
-    protected $usersFile = 'users.json';
 
     protected function setUp(): void
     {
         $this->baseUrl = getenv('BASE_URL') ?: 'http://localhost/web2125Ki408Klymiuk09';
-
-        if (file_exists($this->usersFile)) {
-            unlink($this->usersFile);
-        }
     }
 
+    /**
+     * Helper function to register a user using registration.php.
+     */
     protected function registerUser($username, $password)
     {
         $options = [
             'http' => [
                 'method'  => 'POST',
                 'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-                'content' => http_build_query(['username' => $username, 'password' => $password]),
+                'content' => http_build_query([
+                    'username' => $username,
+                    'password' => $password
+                ]),
             ],
         ];
         $context = stream_context_create($options);
@@ -30,65 +31,89 @@ class AuthTest extends TestCase
 
     public function testLoginEmptyFields()
     {
+        // Test when both username and password fields are empty.
         $options = [
             'http' => [
                 'method'  => 'POST',
                 'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-                'content' => http_build_query(['username' => '', 'password' => '']),
+                'content' => http_build_query([
+                    'username' => '',
+                    'password' => '',
+                    'method' => 'plain'
+                ]),
             ],
         ];
         $context = stream_context_create($options);
         $output = file_get_contents($this->baseUrl . '/login.php', false, $context);
 
-        $this->assertStringContainsString('Please fill in both username and password.', $output);
+        $this->assertStringContainsString('Please fill in all fields.', $output);
     }
 
     public function testLoginNonExistentUser()
     {
+        // Test login with a non-existent username.
         $options = [
             'http' => [
                 'method'  => 'POST',
                 'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-                'content' => http_build_query(['username' => 'nonexistentuser', 'password' => 'any']),
+                'content' => http_build_query([
+                    'username' => 'nonexistentuser',
+                    'password' => 'any',
+                    'method'   => 'plain'
+                ]),
             ],
         ];
         $context = stream_context_create($options);
         $output = file_get_contents($this->baseUrl . '/login.php', false, $context);
 
-        $this->assertStringContainsString('User does not exist.', $output);
+        $this->assertStringContainsString('User not found.', $output);
     }
 
     public function testLoginIncorrectPassword()
     {
-        $this->registerUser('testuser', 'correctpassword');
+        // Register a test user with a unique username.
+        $uniqueUsername = 'testuser_' . uniqid();
+        $this->registerUser($uniqueUsername, 'correctpassword');
 
+        // Attempt to login with the wrong password using plain method.
         $options = [
             'http' => [
-                'method'  => 'POST',
-                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-                'content' => http_build_query(['username' => 'testuser', 'password' => 'wrongpassword']),
+                'method' => 'POST',
+                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                'content' => http_build_query([
+                    'username' => $uniqueUsername,
+                    'password' => 'wrongpassword',
+                    'method'   => 'plain'
+                ]),
             ],
         ];
         $context = stream_context_create($options);
         $output = file_get_contents($this->baseUrl . '/login.php', false, $context);
 
-        $this->assertStringContainsString('Incorrect password.', $output);
+        $this->assertStringContainsString('Incorrect password (plain password).', $output);
     }
 
     public function testLoginSuccessful()
     {
-        $this->registerUser('testuser2', 'mypassword');
+        // Register a new unique user.
+        $uniqueUsername = 'testuser2_' . uniqid();
+        $this->registerUser($uniqueUsername, 'mypassword');
 
+        // Attempt to login with correct credentials using plain method.
         $options = [
             'http' => [
-                'method'  => 'POST',
-                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-                'content' => http_build_query(['username' => 'testuser2', 'password' => 'mypassword']),
+                'method' => 'POST',
+                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                'content' => http_build_query([
+                    'username' => $uniqueUsername,
+                    'password' => 'mypassword',
+                    'method'   => 'plain'
+                ]),
             ],
         ];
         $context = stream_context_create($options);
         $output = file_get_contents($this->baseUrl . '/login.php', false, $context);
 
-        $this->assertStringContainsString('Login successful. Welcome, testuser2!', $output);
+        $this->assertStringContainsString('Authentication successful (plain password).', $output);
     }
 }
