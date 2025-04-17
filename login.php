@@ -122,6 +122,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p><a href="logout.php">Logout</a></p>
             </div>
         <?php endif; ?>
+       
+        <h2>Login with Google</h2>
+        <a href="google-login.php" class="google-login-btn">Login with Google</a>
 
             <h2>Login with plain password</h2>
             <form method="POST">
